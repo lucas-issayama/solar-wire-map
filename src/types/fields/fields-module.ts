@@ -1,0 +1,96 @@
+export const fieldsModule = [
+  {
+    name: "id",
+    label: "Id",
+    type: "string",
+    value: "",
+    hide: true,
+  },
+  {
+    name: "code",
+    label: "Código",
+    type: "string",
+    value: "",
+    size: 4,
+  },
+  {
+    name: "name",
+    label: "Nome",
+    type: "string",
+    value: "",
+    size: 4,
+  },
+
+  {
+    name: "manufacturer_name",
+    label: "Fabricante",
+    type: "string",
+    value: "",
+    size: 4,
+  },
+  {
+    name: "dc_power",
+    label: "Potência Dc(kWp)",
+    type: "number",
+    value: "",
+    editable: false,
+  },
+
+  {
+    name: "voc",
+    label: "Voc (V)",
+    type: "number",
+    value: "",
+    editable: false,
+  },
+
+  {
+    name: "vmp",
+    label: "Vmp (V)",
+    type: "number",
+    value: "",
+    editable: false,
+  },
+  {
+    name: "isc",
+    label: "Isc (A)",
+    type: "number",
+    value: "",
+    editable: false,
+  },
+  {
+    name: "imp",
+    label: "Imp (A)",
+    type: "number",
+    value: "",
+    editable: false,
+  },
+  {
+    name: "coef_voc",
+    label: "Coef. Voc (%)",
+    type: "percentage",
+    value: "",
+    editable: false,
+  },
+  {
+    name: "coef_isc",
+    label: "Coef. Isc (%)",
+    type: "percentage",
+    value: "",
+    editable: false,
+  },
+  {
+    name: "coef_pmp",
+    label: "Coef. Pmp (%)",
+    type: "percentage",
+    value: "",
+    editable: false,
+  },
+  {
+    name: "efficiency",
+    label: "Eficiência (%)",
+    type: "percentage",
+    value: "",
+    editable: false,
+  },
+];

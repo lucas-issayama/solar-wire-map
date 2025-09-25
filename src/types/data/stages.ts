@@ -1,0 +1,38 @@
+export const integratorStages = [
+  {
+    id: 10,
+    name: "Criado pelo integrador",
+    createdAt: "2024-08-07T17:34:33.667Z",
+    updatedAt: "2024-08-07T17:35:54.915Z",
+    publishedAt: "2024-08-07T17:35:54.911Z",
+    slug: "created-by-integrator",
+    integratorMessage: null,
+  },
+  {
+    id: 11,
+    name: "Em finalização por integrador",
+    createdAt: "2024-08-07T17:35:44.584Z",
+    updatedAt: "2024-08-08T11:05:43.605Z",
+    publishedAt: "2024-08-07T17:35:48.649Z",
+    slug: "integrator-checking-out",
+    integratorMessage: null,
+  },
+  {
+    id: 12,
+    name: "Resumo do pedido",
+    createdAt: "2024-08-07T17:38:05.930Z",
+    updatedAt: "2024-08-08T12:22:47.965Z",
+    publishedAt: "2024-08-08T10:12:59.745Z",
+    slug: "integrator-order-summary",
+    integratorMessage: null,
+  },
+  {
+    id: 13,
+    name: "Finalizado por integrador",
+    createdAt: "2024-08-08T12:22:08.233Z",
+    updatedAt: "2024-08-08T12:23:40.829Z",
+    publishedAt: "2024-08-08T12:22:10.443Z",
+    slug: "integrator-order-completed",
+    integratorMessage: null,
+  },
+];
