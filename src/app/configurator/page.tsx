@@ -10,7 +10,6 @@ import NumberSelector from "@/components/ui/number-selector";
 import { Info } from "lucide-react";
 import { formatModule } from "@/utils/solar/format-module";
 import { recalcInverterFromModule } from "@/utils/solar/recalcInverterFromModule";
-import { formatInverterFromSvData } from "@/utils/solar/formatInverterFromSvData";
 import { generateCombinations } from "@/utils/solar/generateCombinations";
 import { formatDecimalBr } from "@/utils/format/format-decimal-br";
 import { convertToCamelCase } from "@/utils/convertToCamelCase";
@@ -27,6 +26,7 @@ export default function Configurator() {
   const [inverters, setInverters] = useState<any>([]);
   const [pvModules, setPvModules] = useState<any>([]);
   const [inverterManufacturers, setInverterManufacturers] = useState<any>([]);
+  const [moduleManufacturers, setModuleManufacturers] = useState<any>([]);
 
   const [selectedModule, setSelectedModule] = useState<any>(null);
   const [selectedInverter, setSelectedInverter] = useState<any>(null);
@@ -38,6 +38,7 @@ export default function Configurator() {
     inverterManufacturer: null,
     inverterId: null,
     moduleId: null,
+    moduleManufacturer: null,
   });
 
   async function loadInverterManufacturers() {
@@ -73,7 +74,38 @@ export default function Configurator() {
     }
   }
 
-  async function loadPvModules() {
+  async function loadModuleManufacturers() {
+    try {
+      const myHeaders = new Headers();
+      myHeaders.append("apiKey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpeXNwaGVwdndwdGJ6bHBlYXdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NjEzNDAsImV4cCI6MjA3NDAzNzM0MH0.0yWdqdsShjUzlK8de_jCgT80AoxljmX1JG9OlDWR9Fo");
+
+      const requestOptions = {
+        method: "GET",
+        headers: myHeaders,
+        redirect: "follow" as RequestRedirect
+      };
+
+      // Get distinct module manufacturers
+      const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?select=manufacturer_name", requestOptions);
+      const result = await response.json();
+
+      if (response.ok) {
+        // Extract unique manufacturer names and filter out nulls
+        const manufacturers = [...new Set(result.map((item: any) => item.manufacturer_name))]
+          .filter((name: any) => name && typeof name === 'string' && name.trim()) // Remove null/empty values
+          .sort(); // Sort alphabetically
+
+        setModuleManufacturers(manufacturers);
+      } else {
+        console.error('Error loading module manufacturers:', result);
+        setModuleManufacturers([]);
+      }
+    } catch {
+      setModuleManufacturers([]);
+    }
+  }
+
+  async function loadPvModules(manufacturerName?: string) {
     setLoading(true);
     setError(null);
     try {
@@ -86,10 +118,12 @@ export default function Configurator() {
         redirect: "follow" as RequestRedirect
       };
 
-      // Filter modules to only include DAH brand modules
-      const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?name=ilike.*DAH*&order=name.asc", requestOptions);
-      //const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?order=name.asc", requestOptions);
-      
+      // Build URL with manufacturer filter if provided
+      const url = manufacturerName && manufacturerName !== "none"
+        ? `https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?manufacturer_name=eq.${manufacturerName}&order=name.asc`
+        : `https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?order=name.asc`;
+
+      const response = await fetch(url, requestOptions);
       const result = await response.json();
 
       if (response.ok) {
@@ -143,12 +177,17 @@ export default function Configurator() {
   }
 
   useEffect(() => {
-    loadPvModules();
+    loadModuleManufacturers();
     loadInverterManufacturers();
   }, []);
 
 
   const inverterManufacturerOptions = inverterManufacturers.map((el: string) => ({
+    value: el,
+    text: el,
+  }));
+
+  const moduleManufacturerOptions = moduleManufacturers.map((el: string) => ({
     value: el,
     text: el,
   }));
@@ -186,7 +225,7 @@ export default function Configurator() {
 
       const formattedModule = formatModule(baseModule);
       const formattedInverter = recalcInverterFromModule(
-        formatInverterFromSvData(baseInverter),
+        baseInverter,
         formattedModule
       );
 
@@ -270,7 +309,7 @@ export default function Configurator() {
   const authorized = checkAuthorization();
 
   return (
-    <div className="container mx-auto px-6 py-8 max-w-6xl">
+    <div className="container mx-auto px-6 py-8 pb-16 max-w-6xl">
       <DialogFinalConfiguration
         open={showFinalDialog}
         setOpen={setShowFinalDialog}
@@ -331,16 +370,39 @@ export default function Configurator() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <SelectObject
+                  label={"Fabricante do Módulo"}
+                  items={moduleManufacturerOptions}
+                  disabled={false}
+                  value={filter.moduleManufacturer}
+                  onValueChange={(value: any) => {
+                    setFilter((el) => ({ ...el, moduleManufacturer: value, moduleId: null }));
+                    loadPvModules(value);
+                  }}
+                />
+              </div>
+
               <div>
                 <SelectObject
                   label={"Módulo"}
-                  items={modules}
-                  disabled={false}
+                  items={loading ? [] : modules}
+                  disabled={!filter.moduleManufacturer || loading || loadingConfigs}
                   value={filter.moduleId}
+                  placeholder={
+                    !filter.moduleManufacturer
+                      ? "Selecione um fabricante primeiro"
+                      : loading
+                      ? "Carregando..."
+                      : pvModules?.length === 0
+                      ? "Nenhum módulo encontrado"
+                      : "Selecione um módulo"
+                  }
                   onValueChange={(value: any) =>
                     setFilter((el) => ({ ...el, moduleId: value }))
                   }
+                  loading={loading}
                 />
               </div>
 
@@ -358,37 +420,33 @@ export default function Configurator() {
               </div>
 
               <div>
-                {loading ? (
-                  <div className="flex items-center justify-center h-16">
-                    <LoadingIcon />
-                    <span className="ml-2 text-gray-600">
-                      Carregando inversores...
-                    </span>
-                  </div>
-                ) : inverters?.length > 0 ? (
-                  <SelectObject
-                    label={"Inversor"}
-                    items={inverters.map((el: any) => ({
-                      value: el.id,
-                      text: el.name,
-                    }))}
-                    disabled={loadingConfigs}
-                    value={filter.inverterId}
-                    onValueChange={(value: any) =>
-                      setFilter((el) => ({ ...el, inverterId: value }))
-                    }
-                  />
-                ) : filter.inverterManufacturer ? (
-                  <div className="text-gray-500 text-sm mt-6">
-                    Nenhum inversor encontrado
-                  </div>
-                ) : null}
+                <SelectObject
+                  label={"Inversor"}
+                  items={loading ? [] : inverters.map((el: any) => ({
+                    value: el.id,
+                    text: el.name,
+                  }))}
+                  disabled={!filter.inverterManufacturer || loading || loadingConfigs}
+                  value={filter.inverterId}
+                  placeholder={
+                    !filter.inverterManufacturer
+                      ? "Selecione um fabricante primeiro"
+                      : loading
+                      ? "Carregando..."
+                      : inverters?.length === 0
+                      ? "Nenhum inversor encontrado"
+                      : "Selecione um inversor"
+                  }
+                  onValueChange={(value: any) =>
+                    setFilter((el) => ({ ...el, inverterId: value }))
+                  }
+                  loading={loading}
+                />
               </div>
 
-              <div className="flex items-end">
+              <div className="flex items-end justify-end md:col-span-2">
                 {filter.inverterId && filter.moduleId ? (
                   <Button
-                    className="w-full"
                     onClick={searchConfigs}
                     disabled={loadingConfigs}
                   >
@@ -627,18 +685,20 @@ export default function Configurator() {
                 </p>
               </div>
 
-              <div className="mb-6">
-                <h3 className="text-md font-medium text-gray-900 mb-3">
+              <div className="mb-8">
+                <h3 className="text-md font-medium text-gray-900 mb-4">
                   Opções de módulos disponíveis:
                 </h3>
-                <NumberSelector
-                  numbers={selectedInverter?.optionsNModules ?? []}
-                  setNumber={(value: number | null) =>
-                    value && chooseConfig(value)
-                  }
-                  activeNumber={activeNumber}
-                  setActiveNumber={setActiveNumber}
-                />
+                <div className="py-4">
+                  <NumberSelector
+                    numbers={selectedInverter?.optionsNModules ?? []}
+                    setNumber={(value: number | null) =>
+                      value && chooseConfig(value)
+                    }
+                    activeNumber={activeNumber}
+                    setActiveNumber={setActiveNumber}
+                  />
+                </div>
               </div>
 
               {(activeNumber ?? 0) > selectedInverter?.nMax && (

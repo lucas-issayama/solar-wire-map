@@ -1,7 +1,11 @@
-export function LoadingIcon() {
+interface LoadingIconProps {
+  className?: string;
+}
+
+export function LoadingIcon({ className = "animate-spin h-5 w-5 mr-3 text-white" }: LoadingIconProps) {
   return (
     <svg
-      className="animate-spin h-5 w-5 mr-3 text-white"
+      className={className}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

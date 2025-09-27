@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LoadingIcon } from "@/components/icons/loading";
 
 interface SelectObjectProps {
   label: any;
@@ -13,6 +14,7 @@ interface SelectObjectProps {
   items: any;
   onValueChange: any;
   disabled: any;
+  loading?: boolean;
 }
 
 export default function SelectObject({
@@ -22,6 +24,7 @@ export default function SelectObject({
   items,
   onValueChange,
   disabled,
+  loading = false,
 }: SelectObjectProps) {
   return (
     <div>
@@ -34,7 +37,14 @@ export default function SelectObject({
         disabled={disabled}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={placeholder ?? "Escolher"} />
+          <div className="truncate pr-8">
+            <SelectValue placeholder={placeholder ?? "Escolher"} />
+          </div>
+          {loading && (
+            <div className="absolute right-8 flex items-center">
+              <LoadingIcon className="animate-spin h-4 w-4 text-gray-400" />
+            </div>
+          )}
         </SelectTrigger>
         <SelectContent>
           {/* <SelectItem value="none">Não selecionado</SelectItem> */}
