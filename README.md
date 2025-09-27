@@ -1,9 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ Solar Wire Map
 
-## Getting Started
+Professional solar installation wire mapping and configuration tool built with Next.js.
 
-First, run the development server:
+## 🌟 Features
 
+- **System Configuration**: Configure solar panels, inverters, and storage systems
+- **Cost Estimation**: Real-time cost calculations for solar installations
+- **Wire Mapping**: Generate detailed installation wire maps
+- **MPPT Configuration**: Advanced MPPT (Maximum Power Point Tracking) setup
+- **Module Compatibility**: Check compatibility between solar modules and inverters
+- **Professional Interface**: Clean, intuitive UI built with Radix UI and Tailwind CSS
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js 15.5.4 with Turbopack
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4.0
+- **UI Components**: Radix UI primitives
+- **Icons**: Lucide React
+- **Data Fetching**: SWR + Axios
+- **Database**: Supabase
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/solar-wire-map.git
+cd solar-wire-map
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+3. Start the development server:
 ```bash
 npm run dev
 # or
@@ -14,24 +56,63 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📱 Application Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Pages
 
-## Learn More
+- **Home** (`/`) - Landing page with feature overview
+- **Configurator** (`/configurator`) - Advanced solar system configuration tool
+- **Estimator** (`/estimator`) - Cost estimation and system sizing
 
-To learn more about Next.js, take a look at the following resources:
+### Key Components
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Solar Utilities** - Functions for solar calculations and configurations
+- **UI Components** - Reusable components built on Radix UI
+- **MPPT Configuration** - Advanced inverter MPPT setup tools
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔧 Configuration
 
-## Deploy on Vercel
+The configurator provides comprehensive solar system design capabilities:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Product Selection**: Choose from available solar modules and inverters
+2. **Specifications Review**: View detailed technical specifications
+3. **Module Configuration**: Set total number of modules for the system
+4. **MPPT Setup**: Configure module distribution across inverter MPPTs
+5. **Final Summary**: Review complete system configuration with power calculations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# solar-wire-map
+## 🌍 Data Sources
+
+The application integrates with a Supabase database containing:
+
+- Solar module specifications and technical data
+- Inverter models with MPPT configurations
+- Manufacturer information and product catalogs
+- Real-time pricing and availability data
+
+## 📦 Scripts
+
+- `npm run dev` - Start development server with Turbopack
+- `npm run build` - Build for production with Turbopack
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🔗 Learn More
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Radix UI](https://www.radix-ui.com/)
+- [Supabase](https://supabase.com/docs)
