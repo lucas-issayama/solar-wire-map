@@ -85,15 +85,17 @@ export default function Configurator() {
         redirect: "follow" as RequestRedirect
       };
 
-      // Get distinct module manufacturers
-      const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?select=manufacturer_name", requestOptions);
+      // Use the custom RPC function to get distinct manufacturer names for PV modules
+      const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/rpc/get_distinct_pv_module_manufacturers", requestOptions);
       const result = await response.json();
 
       if (response.ok) {
-        // Extract unique manufacturer names and filter out nulls
-        const manufacturers = [...new Set(result.map((item: any) => item.manufacturer_name))]
-          .filter((name: any) => name && typeof name === 'string' && name.trim()) // Remove null/empty values
-          .sort(); // Sort alphabetically
+        // The RPC function returns an array of objects with manufacturer_name property
+        // Extract the manufacturer names from the response
+        const manufacturers = result.map((item: any) => {
+          // Handle both possible response formats
+          return item.manufacturer_name || item;
+        }).filter((name: string) => name); // Remove any falsy values
 
         setModuleManufacturers(manufacturers);
       } else {
