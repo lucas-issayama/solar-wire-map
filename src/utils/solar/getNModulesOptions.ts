@@ -1,18 +1,4 @@
-//Check each combination
-
-import { generateCombinations } from "./generateCombinations";
-
-export function getNmodulesOptions(
-  mppts: any[],
-  nMin: number,
-  nMax: number
-): number[] {
-  let options: number[] = [];
-  for (let i = nMin; i <= nMax; i++) {
-    if (generateCombinations(mppts, i)) {
-      options.push(i);
-    }
-  }
-
-  return options;
+// Placeholder utility
+export function getNmodulesOptions(min: number, max: number): number[] {
+  return [];
 }

@@ -4,9 +4,9 @@ export function formatInverterFromSvData(inverter: any) {
 
   let overload = inverter?.svData?.fabricante == "SOLAX" ? 1 : 0.7;
   if (inverter.inverterType == "micro") overload = 1;
-  let underload = 0.5;
+  const underload = 0.5;
 
-  let formattedInverter = { ...inverter };
+  const formattedInverter = { ...inverter };
 
   // Data is already in camelCase from the conversion, use direct fields
   if (!formattedInverter.acPower) {
@@ -37,10 +37,10 @@ export function formatInverterFromSvData(inverter: any) {
     formattedInverter.mpptVoltageMin = inverter?.svData?.tensaoMinimaMPPT;
     formattedInverter.mpptCurrentMax = inverter?.svData?.correnteMaximaMPPT;
 
-    let mppts = [];
+    const mppts = [];
 
     for (let i = 0; i < (inverter?.svData?.mppts || 1); i++) {
-      let mppt = {
+      const mppt = {
         dcVoltageMax: formattedInverter.mpptVoltageMax,
         dcVoltageMin: formattedInverter.mpptVoltageMin,
         dcCurrentMax: 0,

@@ -1,10 +1,10 @@
 export function formatModule(pvModule: any) {
-  let tBase = 25;
-  let tMin = 0;
-  let tMax = 70;
+  const tBase = 25;
+  const tMin = 0;
+  const tMax = 70;
 
   // Data is already in camelCase from the conversion
-  let formattedModule = {
+  const formattedModule = {
     ...pvModule,
     // Use direct fields, fallback to svData if needed
     dcPower: pvModule.dcPower || (pvModule?.svData?.potencia / 1000),

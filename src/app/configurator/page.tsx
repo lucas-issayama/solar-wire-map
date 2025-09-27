@@ -68,7 +68,7 @@ export default function Configurator() {
         console.error('Error loading manufacturers:', result);
         setInverterManufacturers([]);
       }
-    } catch (err) {
+    } catch {
       setInverterManufacturers([]);
     }
   }
@@ -96,7 +96,7 @@ export default function Configurator() {
         setPvModules([]);
         setError("Erro ao carregar módulos. Tente novamente.");
       }
-    } catch (err) {
+    } catch {
       setError("Erro ao carregar módulos. Tente novamente.");
       setPvModules([]);
     } finally {
@@ -131,7 +131,7 @@ export default function Configurator() {
         setInverters([]);
         setError("Erro ao carregar inversores. Tente novamente.");
       }
-    } catch (err) {
+    } catch {
       setError("Erro ao carregar inversores. Tente novamente.");
       setInverters([]);
     } finally {
@@ -189,7 +189,7 @@ export default function Configurator() {
 
       setSelectedModule(formattedModule);
       setSelectedInverter(formattedInverter);
-    } catch (err) {
+    } catch {
       setError(
         "Erro ao buscar configurações. Verifique sua seleção e tente novamente."
       );
@@ -199,7 +199,7 @@ export default function Configurator() {
   }
 
   function chooseConfig(n: number) {
-    let myConfig = generateCombinations(
+    const myConfig = generateCombinations(
       selectedInverter.mppts.map((el: any) =>
         Object.keys(el.options).map((item) => parseInt(item))
       ),
@@ -247,7 +247,7 @@ export default function Configurator() {
     let dcPower = 0;
 
     for (let m = 0; m < inverter.mppts?.length; m++) {
-      let mppt = inverter.mppts[m];
+      const mppt = inverter.mppts[m];
 
       dcPower +=
         module.dcPower *

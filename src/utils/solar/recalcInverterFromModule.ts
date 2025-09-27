@@ -4,7 +4,7 @@ import { getNmodulesOptions } from "./getNModulesOptions";
 import { generateCombinations } from "./generateCombinations";
 
 export function recalcInverterFromModule(inverter: any, pvModule: any) {
-  let formattedInverter: any = { ...inverter };
+  const formattedInverter: any = { ...inverter };
 
   formattedInverter.mppts = inverter?.mppts
     ?.map((mppt: any) => ({
