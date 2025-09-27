@@ -8,7 +8,7 @@ import MpptsSelector from "@/components/ui/mppts-selector";
 import { Card } from "@/components/ui/card";
 import NumberSelector from "@/components/ui/number-selector";
 import { Info } from "lucide-react";
-import { formatModule } from "@/utils/solar/formatModule";
+import { formatModule } from "@/utils/solar/format-module";
 import { recalcInverterFromModule } from "@/utils/solar/recalcInverterFromModule";
 import { formatInverterFromSvData } from "@/utils/solar/formatInverterFromSvData";
 import { generateCombinations } from "@/utils/solar/generateCombinations";
@@ -86,7 +86,10 @@ export default function Configurator() {
         redirect: "follow" as RequestRedirect
       };
 
-      const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules", requestOptions);
+      // Filter modules to only include DAH brand modules
+      const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?name=ilike.*DAH*&order=name.asc", requestOptions);
+      //const response = await fetch("https://eiysphepvwptbzlpeawq.supabase.co/rest/v1/pv_modules?order=name.asc", requestOptions);
+      
       const result = await response.json();
 
       if (response.ok) {
@@ -257,10 +260,17 @@ export default function Configurator() {
     return { dcPower: Math.round(dcPower * 100) / 100 };
   }
 
-  const authorized = true;
+  // Simple authorization check - can be replaced with proper auth later
+  const checkAuthorization = () => {
+    // For now, allow access to everyone
+    // In a real implementation, this would check user session/role
+    return true;
+  };
+
+  const authorized = checkAuthorization();
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <div className="container mx-auto px-6 py-8 max-w-6xl">
       <DialogFinalConfiguration
         open={showFinalDialog}
         setOpen={setShowFinalDialog}
@@ -281,7 +291,7 @@ export default function Configurator() {
       )}
 
       {authorized && (
-        <div className="space-y-8 ">
+        <div className="space-y-6">
           {/* Header */}
           <div className="bg-white border-b pb-4">
             <h1 className="text-3xl font-bold text-gray-900">
@@ -307,7 +317,6 @@ export default function Configurator() {
               </button>
             </div>
           )}
-
           {/* Step 1: Product Selection */}
           <Card className="p-6">
             <div className="mb-4">
@@ -400,6 +409,7 @@ export default function Configurator() {
               </div>
             </div>
           </Card>
+
           {/* Step 2: Product Specifications */}
           {(selectedModule || selectedInverter) && (
             <Card className="p-6">
@@ -775,11 +785,6 @@ export default function Configurator() {
             )}
         </div>
       )}
-      
-      <div className="m-20 ">
-        
-      </div>
-      <br></br>
     </div>
   );
 }
