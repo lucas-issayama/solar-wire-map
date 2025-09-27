@@ -27,11 +27,11 @@ export default function ConfiguratorPage() {
     return Math.round(baseCost * angleMultiplier + batteryAddon);
   };
 
-  const handleConfigChange = (key: string, value: any) => {
+  const handleConfigChange = (key: string, value: string | number[] | boolean) => {
     setConfiguration(prev => ({
       ...prev,
       [key]: value,
-      estimatedCost: key === "estimatedCost" ? value : calculateCost(),
+      estimatedCost: key === "estimatedCost" ? (typeof value === 'number' ? value : 0) : calculateCost(),
     }));
   };
 

@@ -3,7 +3,7 @@
 import { generateCombinations } from "./generateCombinations";
 
 export function getNmodulesOptions(
-  mppts: any[],
+  mppts: number[][],
   nMin: number,
   nMax: number
 ): number[] {

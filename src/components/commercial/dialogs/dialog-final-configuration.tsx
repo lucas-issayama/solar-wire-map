@@ -7,7 +7,6 @@ import {
   Activity,
   Thermometer,
   Calculator,
-  Info,
   Settings
 } from "lucide-react";
 import { formatDecimalBr } from "@/utils/format/format-decimal-br";
@@ -15,9 +14,10 @@ import { formatDecimalBr } from "@/utils/format/format-decimal-br";
 interface DialogFinalConfigurationProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  selectedInverter: any;
-  selectedModule: any;
-  getFinalConfig: (inverter: any, module: any) => { dcPower: number };
+  selectedInverter: unknown;
+  selectedModule: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getFinalConfig?: (...args: any[]) => any;
 }
 
 export default function DialogFinalConfiguration({
@@ -25,11 +25,66 @@ export default function DialogFinalConfiguration({
   setOpen,
   selectedInverter,
   selectedModule,
-  getFinalConfig,
 }: DialogFinalConfigurationProps) {
+  if (!selectedInverter || !selectedModule) {
+    return (
+      <ResponsiveModal
+        open={open}
+        onOpenChange={setOpen}
+        title="Detalhes da Configuração Final"
+        className="p-4 sm:p-6"
+      >
+        <div className="text-center py-6 sm:py-8 text-gray-500">
+          <Settings className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-300" />
+          <p className="text-sm sm:text-base">Configuração não disponível</p>
+        </div>
+      </ResponsiveModal>
+    );
+  }
+
+  // Type assertions with type guards
+  const inverterTyped = selectedInverter as {
+    id: number;
+    name: string;
+    manufacturerName: string;
+    acPower: number;
+    dcMaxPower: number;
+    dcMinPower: number;
+    acVoltage: number;
+    acPhases: number;
+    mppts: Array<{
+      dcVoltageMax: number;
+      dcVoltageMin: number;
+      dcCurrentMax: number;
+      mMin: number;
+      mMax: number;
+      options: Record<number, { wirings: Array<{ s: number; m: number; n: number }> }>;
+      selection?: {
+        number: number;
+        subSelection: number;
+      };
+    }>;
+  };
+
+  const moduleTyped = selectedModule as {
+    id: number;
+    name: string;
+    manufacturerName: string;
+    imp: number;
+    isc: number;
+    voc: number;
+    vmp: number;
+    vocTMin: number;
+    vocTMax: number;
+    vmpTMax: number;
+    dcPower: number;
+  };
 
   // Helper functions for calculations
-  const calculateMpptDetails = (mppt: any, module: any) => {
+  const calculateMpptDetails = (
+    mppt: typeof inverterTyped.mppts[0],
+    module: typeof moduleTyped
+  ) => {
     if (!mppt?.selection?.number || !module) return null;
 
     const wiring = mppt.options?.[mppt.selection.number]?.wirings?.[mppt.selection.subSelection];
@@ -48,14 +103,14 @@ export default function DialogFinalConfiguration({
   };
 
   const getTotalSystemStats = () => {
-    if (!selectedInverter?.mppts || !selectedModule) return null;
+    if (!inverterTyped?.mppts || !moduleTyped) return null;
 
     let totalModules = 0;
     let totalPower = 0;
     let totalCurrent = 0;
 
-    selectedInverter.mppts.forEach((mppt: any) => {
-      const details = calculateMpptDetails(mppt, selectedModule);
+    inverterTyped.mppts.forEach((mppt) => {
+      const details = calculateMpptDetails(mppt, moduleTyped);
       if (details) {
         totalModules += details.totalModules;
         totalPower += details.dcPower;
@@ -70,25 +125,10 @@ export default function DialogFinalConfiguration({
     };
   };
 
-  if (!selectedInverter || !selectedModule) {
-    return (
-      <ResponsiveModal
-        open={open}
-        onOpenChange={setOpen}
-        title="Detalhes da Configuração Final"
-        className="p-4 sm:p-6"
-      >
-        <div className="text-center py-6 sm:py-8 text-gray-500">
-          <Settings className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-300" />
-          <p className="text-sm sm:text-base">Configuração não disponível</p>
-        </div>
-      </ResponsiveModal>
-    );
-  }
 
   const systemStats = getTotalSystemStats();
-  const configuredMppts = selectedInverter.mppts.filter((mppt: any) =>
-    mppt.selection?.number && calculateMpptDetails(mppt, selectedModule)
+  const configuredMppts = inverterTyped.mppts.filter((mppt) =>
+    mppt.selection?.number && calculateMpptDetails(mppt, moduleTyped)
   );
 
   return (
@@ -132,23 +172,23 @@ export default function DialogFinalConfiguration({
                 <h3 className="text-base sm:text-lg font-semibold">Módulo Selecionado</h3>
               </div>
               <div className="space-y-2">
-                <div className="font-medium text-sm sm:text-base">{selectedModule.name}</div>
+                <div className="font-medium text-sm sm:text-base">{moduleTyped.name}</div>
                 <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
                   <div>
                     <span className="text-gray-600">Potência:</span>
-                    <span className="ml-1 font-medium">{formatDecimalBr(selectedModule.dcPower)}W</span>
+                    <span className="ml-1 font-medium">{formatDecimalBr(moduleTyped.dcPower)}W</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Imp:</span>
-                    <span className="ml-1 font-medium">{formatDecimalBr(selectedModule.imp)}A</span>
+                    <span className="ml-1 font-medium">{formatDecimalBr(moduleTyped.imp)}A</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Voc:</span>
-                    <span className="ml-1 font-medium">{formatDecimalBr(selectedModule.voc)}V</span>
+                    <span className="ml-1 font-medium">{formatDecimalBr(moduleTyped.voc)}V</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Vmp:</span>
-                    <span className="ml-1 font-medium">{formatDecimalBr(selectedModule.vmp)}V</span>
+                    <span className="ml-1 font-medium">{formatDecimalBr(moduleTyped.vmp)}V</span>
                   </div>
                 </div>
               </div>
@@ -161,23 +201,23 @@ export default function DialogFinalConfiguration({
                 <h3 className="text-base sm:text-lg font-semibold">Inversor Selecionado</h3>
               </div>
               <div className="space-y-2">
-                <div className="font-medium text-sm sm:text-base">{selectedInverter.name}</div>
+                <div className="font-medium text-sm sm:text-base">{inverterTyped.name}</div>
                 <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
                   <div>
                     <span className="text-gray-600">Potência AC:</span>
-                    <span className="ml-1 font-medium">{formatDecimalBr(selectedInverter.acPower)} kW</span>
+                    <span className="ml-1 font-medium">{formatDecimalBr(inverterTyped.acPower)} kW</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Tensão AC:</span>
-                    <span className="ml-1 font-medium">{formatDecimalBr(selectedInverter.acVoltage)} V</span>
+                    <span className="ml-1 font-medium">{formatDecimalBr(inverterTyped.acVoltage)} V</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Fases:</span>
-                    <span className="ml-1 font-medium">{selectedInverter.acPhases}</span>
+                    <span className="ml-1 font-medium">{inverterTyped.acPhases}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">MPPTs:</span>
-                    <span className="ml-1 font-medium">{selectedInverter.mppts.length}</span>
+                    <span className="ml-1 font-medium">{inverterTyped.mppts.length}</span>
                   </div>
                 </div>
               </div>
@@ -197,14 +237,14 @@ export default function DialogFinalConfiguration({
                   <div className="text-xs sm:text-sm">Nenhum MPPT configurado</div>
                 </div>
               ) : (
-                configuredMppts.map((mppt: any, index: number) => {
-                  const details = calculateMpptDetails(mppt, selectedModule);
+                configuredMppts.map((mppt, index: number) => {
+                  const details = calculateMpptDetails(mppt, moduleTyped);
                   if (!details) return null;
 
                   return (
                     <Card key={index} className="p-3 sm:p-4 border">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3">
-                        <h4 className="font-semibold text-sm sm:text-base">MPPT {selectedInverter.mppts.indexOf(mppt) + 1}</h4>
+                        <h4 className="font-semibold text-sm sm:text-base">MPPT {inverterTyped.mppts.indexOf(mppt) + 1}</h4>
                         <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium self-start sm:self-auto">
                           {details.totalModules} módulos
                         </span>
@@ -230,7 +270,7 @@ export default function DialogFinalConfiguration({
                             {formatDecimalBr(details.dcPower)} kWp
                           </div>
                           <div className="text-xs text-gray-500">
-                            {details.strings} × {details.modulesPerString} × {formatDecimalBr(selectedModule.dcPower)}W
+                            {details.strings} × {details.modulesPerString} × {formatDecimalBr(moduleTyped.dcPower)}W
                           </div>
                         </div>
 
@@ -240,7 +280,7 @@ export default function DialogFinalConfiguration({
                             {formatDecimalBr(details.imp)} A
                           </div>
                           <div className="text-xs text-gray-500">
-                            {details.strings} strings × {formatDecimalBr(selectedModule.imp)}A
+                            {details.strings} strings × {formatDecimalBr(moduleTyped.imp)}A
                           </div>
                         </div>
                       </div>

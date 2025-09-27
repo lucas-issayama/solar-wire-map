@@ -8,7 +8,7 @@ export function toCamelCase(str: string): string {
 /**
  * Recursively converts all snake_case keys in an object to camelCase
  */
-export function convertToCamelCase(obj: any): any {
+export function convertToCamelCase(obj: unknown): unknown {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -18,7 +18,7 @@ export function convertToCamelCase(obj: any): any {
   }
 
   if (typeof obj === 'object') {
-    const converted: any = {};
+    const converted: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(obj)) {
       const camelKey = toCamelCase(key);

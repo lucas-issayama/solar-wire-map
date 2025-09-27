@@ -6,16 +6,25 @@ import {
   Grid3X3,
   Activity,
   Thermometer,
-  Calculator,
-  Info
+  Calculator
 } from "lucide-react";
 import { formatDecimalBr } from "@/utils/format/format-decimal-br";
 
 interface DialogWiringProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  wiring: any;
-  module: any;
+  wiring: {
+    s: number;
+    m: number;
+  } | null;
+  module: {
+    dcPower: number;
+    imp: number;
+    voc: number;
+    vmp: number;
+    vocTMin: number;
+    vmpTMax: number;
+  } | null;
 }
 
 export default function DialogWiring({

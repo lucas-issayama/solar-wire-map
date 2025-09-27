@@ -15,9 +15,16 @@ interface MpptsSelectorProps {
   numbers: number[];
   activeSelection: Selection | null;
   setActiveSelection: (selection: Selection | null) => void;
-  options?: any;
-  module: any;
-  mppt: any;
+  options?: Record<number, { wirings: { s: number; m: number }[] }>;
+  module: {
+    dcPower: number;
+    imp: number;
+    voc: number;
+    vmp: number;
+    vocTMin: number;
+    vmpTMax: number;
+  };
+  mppt: unknown;
 }
 
 function MpptsSelector({
@@ -39,7 +46,7 @@ function MpptsSelector({
     setExpandedOptions(newExpanded);
 
     // If there's only one wiring option, auto-select it
-    const wirings = options[count]?.wirings;
+    const wirings = options?.[count]?.wirings;
     if (wirings && wirings.length === 1) {
       setActiveSelection({ number: count, subSelection: 0 });
     }
@@ -70,22 +77,22 @@ function MpptsSelector({
     }
   }, [activeSelection]);
 
-  const getWiringDescription = (wiring: any) => {
+  const getWiringDescription = (wiring: { s: number; m: number }) => {
     if (!wiring) return "";
     return `${wiring.s} string${wiring.s > 1 ? 's' : ''} × ${wiring.m} módulo${wiring.m > 1 ? 's' : ''} cada`;
   };
 
-  const getVoltageInfo = (wiring: any) => {
+  const getVoltageInfo = (wiring: { s: number; m: number }) => {
     if (!wiring || !module) return "";
     const voltage = wiring.m * module.vmp;
     return `${voltage.toFixed(1)}V por string`;
   };
 
   const getAvailableModuleCounts = () => {
-    return numbers.filter(num => options[num]?.wirings && options[num].wirings.length > 0);
+    return numbers.filter(num => options?.[num]?.wirings && options[num].wirings.length > 0);
   };
 
-  const formatWiring = (option: any) => {
+  const formatWiring = (option: { s: number; m: number } | undefined) => {
     if (!option) return "";
     return `${option.s} string${option.s > 1 ? 's' : ''} × ${option.m} módulo${option.m > 1 ? 's' : ''}`;
   };
@@ -98,7 +105,7 @@ function MpptsSelector({
         open={openDialog}
         setOpen={setOpenDialog}
         wiring={
-          activeSelection && !isNaN(activeSelection.number) ? options[activeSelection.number]?.wirings[activeSelection.subSelection] : null
+          activeSelection && !isNaN(activeSelection.number) ? options?.[activeSelection.number]?.wirings[activeSelection.subSelection] || null : null
         }
         module={module}
       />
@@ -115,7 +122,7 @@ function MpptsSelector({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {availableModuleCounts.map((count) => {
             const isSelected = selectedModuleCount === count;
-            const hasWirings = options[count]?.wirings?.length > 0;
+            const hasWirings = (options?.[count]?.wirings?.length || 0) > 0;
 
             return (
               <button
@@ -142,7 +149,7 @@ function MpptsSelector({
       </div>
 
       {/* Wiring Options */}
-      {selectedModuleCount && options[selectedModuleCount]?.wirings && (
+      {selectedModuleCount && options?.[selectedModuleCount]?.wirings && (
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-md font-semibold text-gray-900 flex items-center gap-2">
@@ -163,7 +170,7 @@ function MpptsSelector({
 
           {expandedOptions.has(selectedModuleCount) && (
             <div className="space-y-2">
-              {options[selectedModuleCount].wirings.map((wiring: any, index: number) => {
+              {options[selectedModuleCount].wirings.map((wiring: { s: number; m: number }, index: number) => {
                 const isSelected = activeSelection?.number === selectedModuleCount &&
                                 activeSelection?.subSelection === index;
 
@@ -213,10 +220,10 @@ function MpptsSelector({
                 Configuração Selecionada: {activeSelection.number} módulos
               </div>
               <div className="text-sm text-blue-700">
-                {formatWiring(options[activeSelection.number]?.wirings[activeSelection.subSelection])}
+                {formatWiring(options?.[activeSelection.number]?.wirings[activeSelection.subSelection])}
               </div>
             </div>
-            {activeSelection && options[activeSelection.number]?.wirings[activeSelection.subSelection] && (
+            {activeSelection && options?.[activeSelection.number]?.wirings[activeSelection.subSelection] && (
               <Button
                 variant="outline"
                 size="sm"

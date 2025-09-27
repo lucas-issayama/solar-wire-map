@@ -3,11 +3,9 @@ export function generateCombinations(
   mppts: number[][],
   n: number
 ): number[] | null {
-  let iteractions = 0;
-
-  let ans = [];
+  const ans: number[] = [];
   let nRemaining = n;
-  let mppts_ = [...mppts];
+  const mppts_ = [...mppts];
 
   if (mppts_.length > 4) {
     //Change the mppt object and consider test bigger numbers
@@ -17,11 +15,10 @@ export function generateCombinations(
     }
   }
 
-  let i = 0;
   let finish = false;
   // console.log(JSON.stringify({ length: mppts_.length, finish, nRemaining }));
   while (mppts_.length > 4 && !finish && nRemaining > 0) {
-    let mppt_ = mppts_[0];
+    const mppt_ = mppts_[0];
     // console.log(
     //   `mppt_?.[mppt_.length - 1]: ${
     //     mppt_?.[mppt_.length - 1]
@@ -47,7 +44,6 @@ export function generateCombinations(
   return ans; */
   // console.log("continue getOption");
   const getOption = (index: number, remaining: number): number[] | null => {
-    iteractions++;
     if (remaining === 0) return Array(mppts_.length).fill(0); // Exact match with no remaining value
     if (index >= mppts_.length) return null; // Out of MPPTs, no solution
 
@@ -67,7 +63,7 @@ export function generateCombinations(
 
     return null; // No solution found for this branch
   };
-  let ans2 = getOption(0, nRemaining);
+  const ans2 = getOption(0, nRemaining);
 
   if (ans2) {
     return [...ans, ...ans2];

@@ -16,6 +16,63 @@ import { convertToCamelCase } from "@/utils/convertToCamelCase";
 
 import DialogFinalConfiguration from "@/components/commercial/dialogs/dialog-final-configuration";
 
+interface PvModule {
+  id: number;
+  name: string;
+  manufacturerName: string;
+  imp: number;
+  isc: number;
+  voc: number;
+  vmp: number;
+  vocTMin: number;
+  vocTMax: number;
+  vmpTMax: number;
+  dcPower: number;
+}
+
+interface MpptOption {
+  [key: string]: number[];
+}
+
+interface Mppt {
+  dcVoltageMax: number;
+  dcVoltageMin: number;
+  dcCurrentMax: number;
+  mMin: number;
+  mMax: number;
+  options: MpptOption;
+  selectedNumber?: number;
+  selection?: {
+    number: number;
+    subSelection: number;
+  };
+}
+
+interface Inverter {
+  id: number;
+  name: string;
+  manufacturerName: string;
+  acPower: number;
+  dcMaxPower: number;
+  dcMinPower: number;
+  acVoltage: number;
+  acPhases: number;
+  mppts: Mppt[];
+  optionsNModules?: number[];
+  nMax?: number;
+}
+
+interface Filter {
+  inverterManufacturer: string | null;
+  inverterId: number | null;
+  moduleId: number | null;
+  moduleManufacturer: string | null;
+}
+
+interface ManufacturerResponse {
+  manufacturer_name: string;
+}
+
 export default function Configurator() {
 
   const [loading, setLoading] = useState(false);
@@ -23,18 +80,18 @@ export default function Configurator() {
   const [error, setError] = useState<string | null>(null);
   const [showFinalDialog, setShowFinalDialog] = useState(false);
 
-  const [inverters, setInverters] = useState<any>([]);
-  const [pvModules, setPvModules] = useState<any>([]);
-  const [inverterManufacturers, setInverterManufacturers] = useState<any>([]);
-  const [moduleManufacturers, setModuleManufacturers] = useState<any>([]);
+  const [inverters, setInverters] = useState<Inverter[]>([]);
+  const [pvModules, setPvModules] = useState<PvModule[]>([]);
+  const [inverterManufacturers, setInverterManufacturers] = useState<string[]>([]);
+  const [moduleManufacturers, setModuleManufacturers] = useState<string[]>([]);
 
-  const [selectedModule, setSelectedModule] = useState<any>(null);
-  const [selectedInverter, setSelectedInverter] = useState<any>(null);
+  const [selectedModule, setSelectedModule] = useState<PvModule | null>(null);
+  const [selectedInverter, setSelectedInverter] = useState<Inverter | null>(null);
 
-  const [config, setConfig] = useState<any>({});
+  const [config, setConfig] = useState<number[]>([]);
   const [activeNumber, setActiveNumber] = useState<number | null>(null);
 
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<Filter>({
     inverterManufacturer: null,
     inverterId: null,
     moduleId: null,
@@ -59,9 +116,9 @@ export default function Configurator() {
       if (response.ok) {
         // The RPC function returns an array of objects with manufacturer_name property
         // Extract the manufacturer names from the response
-        const manufacturers = result.map((item: any) => {
+        const manufacturers = result.map((item: ManufacturerResponse | string) => {
           // Handle both possible response formats
-          return item.manufacturer_name || item;
+          return typeof item === 'string' ? item : item.manufacturer_name;
         }).filter((name: string) => name); // Remove any falsy values
 
         setInverterManufacturers(manufacturers);
@@ -92,9 +149,9 @@ export default function Configurator() {
       if (response.ok) {
         // The RPC function returns an array of objects with manufacturer_name property
         // Extract the manufacturer names from the response
-        const manufacturers = result.map((item: any) => {
+        const manufacturers = result.map((item: ManufacturerResponse | string) => {
           // Handle both possible response formats
-          return item.manufacturer_name || item;
+          return typeof item === 'string' ? item : item.manufacturer_name;
         }).filter((name: string) => name); // Remove any falsy values
 
         setModuleManufacturers(manufacturers);
@@ -129,7 +186,7 @@ export default function Configurator() {
       const result = await response.json();
 
       if (response.ok) {
-        const camelCaseModules = convertToCamelCase(result);
+        const camelCaseModules = convertToCamelCase(result) as PvModule[];
         setPvModules(camelCaseModules);
       } else {
         setPvModules([]);
@@ -164,7 +221,7 @@ export default function Configurator() {
       const result = await response.json();
 
       if (response.ok) {
-        const camelCaseInverters = convertToCamelCase(result);
+        const camelCaseInverters = convertToCamelCase(result) as Inverter[];
         setInverters(camelCaseInverters);
       } else {
         setInverters([]);
@@ -195,13 +252,13 @@ export default function Configurator() {
   }));
 
   const modules = pvModules
-    ?.map((el: any) => ({
+    ?.map((el) => ({
       value: el.id,
       text: el.name,
     }))
     ?.filter(
-      (item: any, index: number, self: any) =>
-        self.findIndex((obj: any) => obj.value === item.value) === index
+      (item, index: number, self) =>
+        self.findIndex((obj) => obj.value === item.value) === index
     );
 
   async function searchConfigs() {
@@ -210,15 +267,15 @@ export default function Configurator() {
       return;
     }
 
-    setConfig({});
+    setConfig([]);
     setActiveNumber(null);
     setError(null);
     setLoadingConfigs(true);
 
     try {
-      const baseModule = pvModules.find((el: any) => el.id == filter.moduleId);
+      const baseModule = pvModules.find((el) => el.id == filter.moduleId);
       const baseInverter = inverters.find(
-        (el: any) => el.id == filter?.inverterId
+        (el) => el.id == filter?.inverterId
       );
 
       if (!baseModule || !baseInverter) {
@@ -231,8 +288,8 @@ export default function Configurator() {
         formattedModule
       );
 
-      setSelectedModule(formattedModule);
-      setSelectedInverter(formattedInverter);
+      setSelectedModule({ ...baseModule, ...formattedModule } as PvModule);
+      setSelectedInverter({ ...baseInverter, ...formattedInverter } as unknown as Inverter);
     } catch {
       setError(
         "Erro ao buscar configurações. Verifique sua seleção e tente novamente."
@@ -243,8 +300,10 @@ export default function Configurator() {
   }
 
   function chooseConfig(n: number) {
+    if (!selectedInverter) return;
+
     const myConfig = generateCombinations(
-      selectedInverter.mppts.map((el: any) =>
+      selectedInverter.mppts.map((el) =>
         Object.keys(el.options).map((item) => parseInt(item))
       ),
       n
@@ -253,7 +312,7 @@ export default function Configurator() {
 
     setSelectedInverter({
       ...selectedInverter,
-      mppts: selectedInverter.mppts.map((mppt: any, index: number) => ({
+      mppts: selectedInverter.mppts.map((mppt, index: number) => ({
         ...mppt,
         selectedNumber: myConfig?.[index],
         selection: {
@@ -267,35 +326,35 @@ export default function Configurator() {
 
     console.log(
       JSON.stringify(
-        selectedInverter.mppts.map((mppt: any, index: number) => ({
+        selectedInverter.mppts.map((mppt, index: number) => ({
           ...mppt,
           selectedNumber: myConfig?.[index],
           selection: { number: myConfig?.[index], subSelection: 0 },
         }))
       )
     );
-    setConfig(myConfig);
+    setConfig(myConfig || []);
   }
 
-  function updateSelection(updatedInverter: any) {
+  function updateSelection(updatedInverter: Inverter) {
     setActiveNumber(
       updatedInverter?.mppts?.reduce(
-        (acc: any, curr: any) => acc + curr?.selection?.number,
+        (acc: number, curr) => acc + (curr?.selection?.number || 0),
         0
       )
     );
     setSelectedInverter(updatedInverter);
   }
 
-  function getFinalConfig(inverter: any, module: any) {
+  function getFinalConfig(inverter: Inverter, module: PvModule) {
     let dcPower = 0;
 
-    for (let m = 0; m < inverter.mppts?.length; m++) {
+    for (let m = 0; m < (inverter.mppts?.length || 0); m++) {
       const mppt = inverter.mppts[m];
 
       dcPower +=
         module.dcPower *
-        (mppt.selection?.number > 0 ? mppt.selection?.number : 0);
+        (mppt.selection?.number && mppt.selection.number > 0 ? mppt.selection.number : 0);
     }
 
     return { dcPower: Math.round(dcPower * 100) / 100 };
@@ -378,8 +437,8 @@ export default function Configurator() {
                   label={"Fabricante do Módulo"}
                   items={moduleManufacturerOptions}
                   disabled={false}
-                  value={filter.moduleManufacturer}
-                  onValueChange={(value: any) => {
+                  value={filter.moduleManufacturer || ""}
+                  onValueChange={(value: string) => {
                     setFilter((el) => ({ ...el, moduleManufacturer: value, moduleId: null }));
                     loadPvModules(value);
                   }}
@@ -391,7 +450,7 @@ export default function Configurator() {
                   label={"Módulo"}
                   items={loading ? [] : modules}
                   disabled={!filter.moduleManufacturer || loading || loadingConfigs}
-                  value={filter.moduleId}
+                  value={filter.moduleId || ""}
                   placeholder={
                     !filter.moduleManufacturer
                       ? "Selecione um fabricante primeiro"
@@ -401,8 +460,8 @@ export default function Configurator() {
                       ? "Nenhum módulo encontrado"
                       : "Selecione um módulo"
                   }
-                  onValueChange={(value: any) =>
-                    setFilter((el) => ({ ...el, moduleId: value }))
+                  onValueChange={(value: string) =>
+                    setFilter((el) => ({ ...el, moduleId: parseInt(value) || null }))
                   }
                   loading={loading}
                 />
@@ -413,8 +472,8 @@ export default function Configurator() {
                   label={"Fabricante do Inversor"}
                   items={inverterManufacturerOptions}
                   disabled={false}
-                  value={filter.inverterManufacturer}
-                  onValueChange={(value: any) => {
+                  value={filter.inverterManufacturer || ""}
+                  onValueChange={(value: string) => {
                     setFilter((el) => ({ ...el, inverterManufacturer: value }));
                     loadInverters(value);
                   }}
@@ -424,12 +483,12 @@ export default function Configurator() {
               <div>
                 <SelectObject
                   label={"Inversor"}
-                  items={loading ? [] : inverters.map((el: any) => ({
+                  items={loading ? [] : inverters.map((el) => ({
                     value: el.id,
                     text: el.name,
                   }))}
                   disabled={!filter.inverterManufacturer || loading || loadingConfigs}
-                  value={filter.inverterId}
+                  value={filter.inverterId || ""}
                   placeholder={
                     !filter.inverterManufacturer
                       ? "Selecione um fabricante primeiro"
@@ -439,8 +498,8 @@ export default function Configurator() {
                       ? "Nenhum inversor encontrado"
                       : "Selecione um inversor"
                   }
-                  onValueChange={(value: any) =>
-                    setFilter((el) => ({ ...el, inverterId: value }))
+                  onValueChange={(value: string) =>
+                    setFilter((el) => ({ ...el, inverterId: parseInt(value) || null }))
                   }
                   loading={loading}
                 />
@@ -619,7 +678,7 @@ export default function Configurator() {
                         </h5>
                         <div className="space-y-3">
                           {selectedInverter?.mppts.map(
-                            (mppt: any, index: number) => (
+                            (mppt, index: number) => (
                               <div
                                 key={index}
                                 className="bg-white p-3 rounded border-l-4 border-blue-500"
@@ -703,7 +762,7 @@ export default function Configurator() {
                 </div>
               </div>
 
-              {(activeNumber ?? 0) > selectedInverter?.nMax && (
+              {(activeNumber ?? 0) > (selectedInverter?.nMax ?? 0) && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                   <div className="flex items-center">
                     <div className="text-red-600 font-semibold">
@@ -735,24 +794,26 @@ export default function Configurator() {
               </div>
 
               <div className="space-y-6">
-                {selectedInverter.mppts.map((mppt: any, index: number) => (
+                {selectedInverter?.mppts?.map((mppt, index: number) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-4">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">
                       MPPT {index + 1}
                     </h3>
-                    <MpptsSelector
-                      mppt={mppt}
-                      module={selectedModule}
+                    {selectedModule && (
+                      <MpptsSelector
+                        mppt={mppt}
+                        module={selectedModule}
                       numbers={Object.keys(mppt.options).map((el) =>
                         parseInt(el)
                       )}
-                      activeSelection={mppt.selection}
-                      options={mppt.options}
-                      setActiveSelection={(newSelection: any) => {
+                      activeSelection={mppt.selection || null}
+                      options={mppt.options as unknown as Record<number, { wirings: { s: number; m: number }[] }>}
+                      setActiveSelection={(newSelection: { number: number; subSelection: number } | null) => {
+                        if (!selectedInverter || !newSelection) return;
                         updateSelection({
                           ...selectedInverter,
                           mppts: selectedInverter.mppts.map(
-                            (el: any, i: number) => ({
+                            (el, i: number) => ({
                               ...el,
                               selection:
                                 index == i ? newSelection : el.selection,
@@ -761,6 +822,7 @@ export default function Configurator() {
                         });
                       }}
                     />
+                    )}
                   </div>
                 ))}
               </div>

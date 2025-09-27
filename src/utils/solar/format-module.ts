@@ -1,14 +1,15 @@
 
-export function formatModule(pvModule: any) {
-  let tBase = 25;
-  let tMin = 0;
-  let tMax = 70;
+export function formatModule(pvModule: { voc: number; vmp: number; coefVoc?: number }) {
+  const tBase = 25;
+  const tMin = 0;
+  const tMax = 70;
 
-  let formattedModule = {
+  const coefVoc = pvModule.coefVoc || 0;
+  const formattedModule = {
     ...pvModule,
-    vocTMin: (1 + pvModule?.coefVoc * (tMin - tBase)) * pvModule?.voc,
-    vocTMax: (1 + pvModule?.coefVoc * (tMax - tBase)) * pvModule?.voc,
-    vmpTMax: (1 - pvModule?.coefVoc * (tMin - tBase)) * pvModule?.vmp,
+    vocTMin: (1 + coefVoc * (tMin - tBase)) * pvModule.voc,
+    vocTMax: (1 + coefVoc * (tMax - tBase)) * pvModule.voc,
+    vmpTMax: (1 - coefVoc * (tMin - tBase)) * pvModule.vmp,
   };
   return formattedModule;
 }

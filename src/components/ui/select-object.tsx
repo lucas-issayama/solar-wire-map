@@ -8,12 +8,12 @@ import {
 import { LoadingIcon } from "@/components/icons/loading";
 
 interface SelectObjectProps {
-  label: any;
+  label: string;
   placeholder?: string;
-  value: any;
-  items: any;
-  onValueChange: any;
-  disabled: any;
+  value: string | number;
+  items: { value: string | number; text: string }[];
+  onValueChange: (value: string) => void;
+  disabled: boolean;
   loading?: boolean;
 }
 
@@ -49,8 +49,8 @@ export default function SelectObject({
         <SelectContent>
           {/* <SelectItem value="none">Não selecionado</SelectItem> */}
           {items
-            ?.filter((el: any) => el.value)
-            ?.map((el: any) => (
+            ?.filter((el) => el.value)
+            ?.map((el) => (
               <SelectItem key={el.value} value={el.value?.toString()}>
                 {el.text}
               </SelectItem>
